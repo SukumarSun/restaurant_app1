@@ -1,0 +1,105 @@
+# summary: Fetch many Restaurant
+# tasks:
+#   - id: postgres_restaurant_search
+#     fn: com.gs.datastore
+#     args:
+#       datasource: postgres
+#       data: <% inputs.body %>
+#       config:
+#         method: Restaurant.findMany
+
+
+# summary: Fetch many Restaurant
+# tasks:
+#   - id: postgres_restaurant_search
+#     fn: com.gs.switch
+#     value: <%inputs.body%>
+
+#         - id: filtering_basedon_location
+#           fn: com.gs.datastore
+#           args:
+#             datasource: postgres
+#             data:
+#               where:
+#
+              
+#             config:
+#               method: Restaurant.findMany
+#       
+#         - id: filtering_basedon_couponCode
+#           fn: com.gs.datastore
+#           args:
+#             datasource: postgres
+#             data:
+#               where:
+
+              
+#             config:
+#               method: Restaurant.findMany
+#       default:
+#         - id: filtering_basedon_default
+#           fn: com.gs.datastore
+#           args:
+#             datasource: postgres
+#             data:
+#               where:
+#                
+#             config:
+#               method: Restaurant.findMany
+
+
+#  <%js inputs.body.couponCode ==='' && inputs.body.location!==''%>:
+# <%js inputs.body.location === ''%>:
+#  location: <% inputs.body.location %>
+#                 menuItems:
+#                 
+#               include:
+#                 menuItems:
+#                
+  # - id: step2_switch
+  #   fn: com.gs.transform
+  #   args: |
+  #       <js% 
+  #         { code: 100, ...outputs.step1_switch }
+  #       %>
+
+
+summary: Restaurant search API using if else
+tasks:
+  - id: FIRST
+    fn: com.gs.if
+    condition: <% inputs.body.couponCode %>
+    tasks:
+      - id: A
+        description: Filters based on CouponCode's in given location
+        fn: com.gs.datastore
+        args:
+          datasource: postgres
+          data:
+            where:
+              location: <% inputs.body.location %>
+            include:
+              menuItems:
+                where:
+                  couponCode:
+                    has: <% inputs.body.couponCode %> 
+          config:
+            method: Restaurant.findMany
+
+  - id: SECOND
+    description: Filters based on location and gives menu items
+    fn: com.gs.else
+    tasks:
+      - id: B
+        description: Return all restaurants of given location along with menu items
+        fn: com.gs.datastore
+        args:
+          datasource: postgres
+          data:
+            where:
+              location: <% inputs.body.location %>
+            include:
+              menuItems: true
+          config:
+            method: Restaurant.findMany
+
