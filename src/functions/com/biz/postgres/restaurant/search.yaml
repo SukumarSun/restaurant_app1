@@ -1,1 +1,205 @@
+#Tried to solve it through two methods, first I tried using switch_case logic, it is working but in one case,it is throwing an error,
+#hence I then tried to solve it using if else logic as below.
+#The below is if else logic, after this if else logic, I also provided the logic I followed for switch_case 
+#and provided my approach 
+
+summary: searching Restaurants
+tasks:
+  - id: if
+    fn: com.gs.if
+    condition: <% inputs.body.code %>
+    tasks:
+      - id: step1
+        description: Return filtered restaurants along with menu items based on given CouponCode in given location
+        fn: com.gs.datastore
+        args:
+          datasource: postgres
+          data:
+            where:
+              location: <% inputs.body.location %>
+            include:
+              menuItems:
+                where:
+                  couponCode:
+                    has: <% inputs.body.code %> 
+          config:
+            method: Restaurant.findMany
+
+  - id: else
+    description: Return all restaurants along with menu items in given location
+    fn: com.gs.else
+    tasks:
+      - id: step4
+        description: Return all restaurants of given location
+        fn: com.gs.datastore
+        args:
+          datasource: postgres
+          data:
+            where:
+              location: <% inputs.body.location %>
+            include:
+              menuItems: true
+          config:
+            method: Restaurant.findMany
+
+#My Approach using switch_case
+#The below default code given by godspeed, did hit and trail on it and observed where to add code to filter
+
+# summary: Fetch many Restaurant
+# tasks:
+#   - id: postgres_restaurant_search
+#     fn: com.gs.datastore
+#     args:
+#       datasource: postgres
+#       data: <% inputs.body %>
+#       config:
+#         method: Restaurant.findMany
+
+
+#After some research found that where and include should be used, but this solves only  one case .
+
+# summary: Fetch restaurants with menu items
+# tasks:
+  # - id: postgres_restaurant_search
+  #   fn: com.gs.datastore
+  #   args:
+  #     datasource: postgres
+  #     data:
+  #       where:
+  #         # location: <% inputs.body.location %>
+  #         menuItems:
+  #           some:
+  #             couponCode:
+  #               equals: <% inputs.body.couponCode %>
+  #       include:
+  #         menuItems:
+  #           where:        
+  #             couponCode:
+  #               equals: <% inputs.body.couponCode %>
+         
+  #     config:
+  #       method: Restaurant.findMany
+
+
+
+#But there are more possible cases, learnt through  assignment documents that I have to use switch case.
+#Checked the basic example as given below in hello_world switch_case.yaml, tried to apply it to the problem accordingly.
+
+# summary: Multiplexing create loan for hdfc api calls
+# id: example_switch_functionality_id
+# tasks:
+#   - id: step1_switch
+#     fn: com.gs.switch
+#     value: <%inputs.body.condition%>
+#     cases:
+#       FIRST:
+#         id: 1st
+#         fn: com.gs.return
+#         args: "'case - 1'"
+#       SECOND:
+#         id: 2nd
+#         fn: com.gs.return
+#         args: "'case - 2'"
+#       THIRD:
+#         id: 3rd
+#         fn: com.gs.return
+#         args: "'case - 3'"
+#       default:
+#         id: default_case
+#         fn: com.gs.return
+#         args: "'case - default'"
+#   - id: step2_switch
+#     fn: com.gs.transform
+#     args: |
+#         <js% 
+#           { code: 100, ...outputs.step1_switch }
+#         %>
+
+
+#Changed the code according to the case, removed id:step_2.switch as we already have restaurant findMany method in each case and got the final code as below. 
+#Used Swagger and resolved minor errors . 
+#But still trying to resolve an error , one case where only location is provided , is giving wrong output
+#Working on that, as the control is not going inside case <% inputs.body.couponCode === ''%>:
+
+
+
+# summary: Fetch many Restaurant
+# tasks:
+#   - id: postgres_restaurant_search
+#     fn: com.gs.switch
+#     value: <%inputs.body%>
+#     cases:
+#       <%js inputs.body.couponCode ==='' && inputs.body.location!==''%>:
+#         - id: filtering_basedon_location
+#           fn: com.gs.datastore
+#           args:
+#             datasource: postgres
+#             data:
+#               where:
+#                 location: <% inputs.body.location %>
+#                 # menuItems:
+#                 #   some:
+#                 #     couponCode:
+#                 #       equals: <% inputs.body.couponCode %>
+#               include:
+#                 menuItems:
+#                   # where:        
+#                   #   couponCode:
+#                   #     equals: <% inputs.body.couponCode %>
+              
+#             config:
+#               method: Restaurant.findMany
+#       <%js inputs.body.location === ''%>:
+#         - id: filtering_basedon_couponCode
+#           fn: com.gs.datastore
+#           args:
+#             datasource: postgres
+#             data:
+#               where:
+#                 # location: <% inputs.body.location %>
+#                 menuItems:
+#                   some:
+#                     couponCode:
+#                       equals: <% inputs.body.couponCode %>
+#               include:
+#                 menuItems:
+#                   where:        
+#                     couponCode:
+#                       equals: <% inputs.body.couponCode %>
+              
+#             config:
+#               method: Restaurant.findMany
+#       default:
+#         - id: filtering_basedon_default
+#           fn: com.gs.datastore
+#           args:
+#             datasource: postgres
+#             data:
+#               where:
+#                 location: <% inputs.body.location %>
+#                 menuItems:
+#                   some:
+#                     couponCode:
+#                       equals: <% inputs.body.couponCode %>
+#               include:
+#                 menuItems:
+#                   where:        
+#                     couponCode:
+#                       equals: <% inputs.body.couponCode %>
+              
+#             config:
+#               method: Restaurant.findMany
+
+
+#The below code is not required
+
+  # - id: step2_switch
+  #   fn: com.gs.transform
+  #   args: |
+  #       <js% 
+  #         { code: 100, ...outputs.step1_switch }
+  #       %>
+
+
+
 
