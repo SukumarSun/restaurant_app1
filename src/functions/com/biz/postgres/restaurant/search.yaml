@@ -5,12 +5,12 @@
 
 summary: searching Restaurants
 tasks:
-  - id: if
+  - id: if_part
     fn: com.gs.if
-    condition: <% inputs.body.code %>
+    condition: <% inputs.body.couponCode %>
     tasks:
-      - id: step1
-        description: Return filtered restaurants along with menu items based on given CouponCode in given location
+      - id: if_logic
+        description: Filters restaurants based on the location and couponCode provided.
         fn: com.gs.datastore
         args:
           datasource: postgres
@@ -21,16 +21,16 @@ tasks:
               menuItems:
                 where:
                   couponCode:
-                    has: <% inputs.body.code %> 
+                    has: <% inputs.body.couponCode %> 
           config:
             method: Restaurant.findMany
 
-  - id: else
-    description: Return all restaurants along with menu items in given location
+  - id: else_part
+    description: Filters restuarants based on location and returns all the menuItems
     fn: com.gs.else
     tasks:
-      - id: step4
-        description: Return all restaurants of given location
+      - id: else_logic
+        description: Restaurants in given location are returned 
         fn: com.gs.datastore
         args:
           datasource: postgres
@@ -43,7 +43,7 @@ tasks:
             method: Restaurant.findMany
 
 #My Approach using switch_case
-#The below default code given by godspeed, did hit and trail on it and observed where to add code to filter
+#The below default code is given by godspeed,observed the other default events and functions given.Did hit and trail on it and concluded where to add code to filter
 
 # summary: Fetch many Restaurant
 # tasks:
@@ -56,7 +56,7 @@ tasks:
 #         method: Restaurant.findMany
 
 
-#After some research found that where and include should be used, but this solves only  one case .
+#After some research found that where and include should be used, but this solves only one case(when both couponCode and location are provided) .Hence the code below
 
 # summary: Fetch restaurants with menu items
 # tasks:
@@ -83,7 +83,7 @@ tasks:
 
 
 #But there are more possible cases, learnt through  assignment documents that I have to use switch case.
-#Checked the basic example as given below in hello_world switch_case.yaml, tried to apply it to the problem accordingly.
+#Checked the basic example as given below in hello_world switch_case.yaml, tried to understand and applied it to the problem accordingly.
 
 # summary: Multiplexing create loan for hdfc api calls
 # id: example_switch_functionality_id
@@ -119,7 +119,7 @@ tasks:
 #Changed the code according to the case, removed id:step_2.switch as we already have restaurant findMany method in each case and got the final code as below. 
 #Used Swagger and resolved minor errors . 
 #But still trying to resolve an error , one case where only location is provided , is giving wrong output
-#Working on that, as the control is not going inside case <% inputs.body.couponCode === ''%>:
+#Working on that, as the control is not going inside case (<% inputs.body.couponCode === ''%>), control is directly going to default case:
 
 
 
